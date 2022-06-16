@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.spring.mapper.MessageMapper">
+
+    <insert id="saveMessage" parameterType="boot.spring.entity.Message" useGeneratedKeys="true" keyProperty="id">
+        insert into message
+            (`from`, `to`, content, date, time)
+        VALUES (#{message.from}, #{message.to}, #{message.content}, #{message.date}, #{message.time})
+    </insert>
+    <select id="getHistoryMessage" resultType="boot.spring.entity.Message" resultMap="userResultMap">
+        select *
+        from message
+        where (`from` = #{userId} and `to` = #{friendId})
+           or (`to` = #{userId} and `from` = #{friendId})
+
+    </select>
+
+
+    <select id="getMainMessage" resultMap="userResultMap">
+        select *
+        from message m  left join user u on m .`to`=u.id  left join user u1 on m.`from`=u1.id
+        where m.`to` = #{userId}
+    </select>
+
+
+    <resultMap id="userResultMap" type="boot.spring.entity.Message">
+        <id property="id" column="id"/>
+        <result property="from" column="from"/>
+        <result property="to" column="to"/>
+        <result property="content" column="content"/>
+        <result property="date" column="date"/>
+        <result property="time" column="time"/>
+        <association property="fromUser" column="from" javaType="boot.spring.entity.User" select="boot.spring.mapper.MessageMapper.selectUserById">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="head_image" column="head_image"/>
+            <result property="last_update" column="last_update"/>
+
+        </association>
+        <association property="toUser" column="to"  javaType="boot.spring.entity.User" select="boot.spring.mapper.MessageMapper.selectUserById">
+            <id property="id" column="id"/>
+            <result property="username" column="username"/>
+            <result property="head_image" column="head_image"/>
+            <result property="last_update" column="last_update"/>
+        </association>
+    </resultMap>
+    <select id="selectUserById" parameterType="int" resultType="boot.spring.entity.User">
+        select * from user where id=#{userId}
+    </select>
+
+</mapper>
